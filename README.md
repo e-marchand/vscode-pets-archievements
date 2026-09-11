@@ -2,6 +2,8 @@
 
 > A reference for the Copilot Chat pet achievements and hat accessories in VS Code.
 
+View this reference online at [e-marchand.github.io/vscode-pets-archievements](https://e-marchand.github.io/vscode-pets-archievements/).
+
 This list is based on the upstream `microsoft/vscode` `chatPetAchievements.ts` definitions and the matching accessory sprite sheets copied into [`assets/accessories`](./assets/accessories). Each accessory image is a 384 x 288 PNG atlas containing animation frames.
 
 ## Enabled achievements
