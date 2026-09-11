@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VS Code Pets Achievements</title>
+<style>
+  :root {
+    --vscode-editor-background: #1e1e1e;
+    --vscode-editorWidget-background: #252526;
+    --vscode-editorWidget-border: #454545;
+    --vscode-list-hoverBackground: #2a2d2e;
+    --vscode-focusBorder: #007fd4;
+    --vscode-foreground: #cccccc;
+    --vscode-descriptionForeground: #9d9d9d;
+    --vscode-badge-background: #4d4d4d;
+    --vscode-badge-foreground: #ffffff;
+    --vscode-font-family: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    --vscode-font-size: 13px;
+    --vscode-font-weight-semibold: 600;
+    --vscode-corner-radius: 4px;
+    --spacing-20: 2px;
+    --spacing-40: 4px;
+    --spacing-60: 6px;
+    --spacing-80: 8px;
+    --spacing-100: 10px;
+    --spacing-120: 12px;
+    --spacing-160: 16px;
+    --spacing-200: 20px;
+    --spacing-240: 24px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    background: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+  }
+
+  body {
+    overflow-y: auto;
+  }
+
+  .chat-pet-achievements-content {
+    min-width: 0;
+    padding: var(--spacing-240);
+  }
+
+  .chat-pet-achievements-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin-top: 0;
+  }
+
+  h1 {
+    margin-bottom: var(--spacing-80);
+    font-size: 22px;
+    font-weight: var(--vscode-font-weight-semibold);
+  }
+
+  .chat-pet-achievements-intro {
+    margin-bottom: var(--spacing-240);
+    color: var(--vscode-descriptionForeground);
+  }
+
+  .chat-pet-achievements-collection-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-120);
+  }
+
+  .chat-pet-achievements-collection-header h2 {
+    margin-bottom: var(--spacing-120);
+    font-size: 16px;
+    font-weight: var(--vscode-font-weight-semibold);
+  }
+
+  .chat-pet-achievements-count {
+    color: var(--vscode-descriptionForeground);
+    white-space: nowrap;
+  }
+
+  .chat-pet-achievements-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--spacing-160);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .chat-pet-achievement-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 253px;
+    min-width: 0;
+    padding: var(--spacing-160);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editorWidget-background);
+    color: var(--vscode-foreground);
+    font: inherit;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+  }
+
+  button.chat-pet-achievement-card {
+    cursor: pointer;
+  }
+
+  button.chat-pet-achievement-card:not(.locked):hover,
+  button.chat-pet-achievement-card.previewing {
+    border-color: var(--vscode-focusBorder);
+    background: var(--vscode-list-hoverBackground);
+  }
+
+  button.chat-pet-achievement-card:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: -1px;
+  }
+
+  .chat-pet-achievement-card.wearing {
+    border-color: var(--vscode-focusBorder);
+  }
+
+  .chat-pet-achievement-card.locked {
+    filter: grayscale(1);
+    opacity: 0.5;
+  }
+
+  .chat-pet-achievement-card.locked:hover,
+  .chat-pet-achievement-card.locked:focus-visible {
+    filter: none;
+    opacity: 1;
+  }
+
+  .chat-pet-achievement-card.locked:hover {
+    border-color: var(--vscode-focusBorder);
+    background: var(--vscode-list-hoverBackground);
+  }
+
+  .chat-pet-achievement-previews {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-80);
+    margin-bottom: var(--spacing-120);
+  }
+
+  .chat-pet-achievement-preview {
+    display: block;
+    width: 96px;
+    height: 96px;
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editor-background);
+    image-rendering: pixelated;
+  }
+
+  .chat-pet-achievement-new-badge {
+    position: absolute;
+    z-index: 1;
+    top: var(--spacing-100);
+    right: var(--spacing-100);
+    padding: var(--spacing-20) var(--spacing-60);
+    border: 1px solid var(--vscode-badge-background);
+    border-radius: 999px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    font-size: 10px;
+    font-weight: var(--vscode-font-weight-semibold);
+    line-height: 1;
+  }
+
+  .chat-pet-achievement-new-badge.hidden {
+    display: none;
+  }
+
+  .chat-pet-achievement-card h3 {
+    margin-bottom: var(--spacing-40);
+    overflow-wrap: anywhere;
+    font-size: 16px;
+    font-weight: var(--vscode-font-weight-semibold);
+  }
+
+  .chat-pet-achievement-state {
+    display: inline-block;
+    margin-bottom: var(--spacing-100);
+    color: var(--vscode-descriptionForeground);
+    font-weight: var(--vscode-font-weight-semibold);
+  }
+
+  .chat-pet-achievement-description,
+  .chat-pet-achievement-reward {
+    margin-bottom: var(--spacing-80);
+    color: var(--vscode-descriptionForeground);
+    overflow-wrap: anywhere;
+  }
+
+  .hover-state {
+    display: none;
+  }
+
+  .chat-pet-achievement-card:hover .default-state,
+  .chat-pet-achievement-card:focus-visible .default-state {
+    display: none;
+  }
+
+  .chat-pet-achievement-card:hover .hover-state,
+  .chat-pet-achievement-card:focus-visible .hover-state {
+    display: block;
+  }
+
+  .chat-pet-achievement-roadmap {
+    border-style: dashed;
+  }
+
+  .chat-pet-achievement-roadmap-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto var(--spacing-120);
+    border: 1px dashed var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editor-background);
+    color: var(--vscode-descriptionForeground);
+    font-size: 22px;
+    font-weight: var(--vscode-font-weight-semibold);
+    letter-spacing: 0.08em;
+  }
+
+  .chat-pet-achievement-roadmap-list {
+    margin: 0;
+    padding-left: var(--spacing-200);
+    color: var(--vscode-descriptionForeground);
+  }
+
+  .chat-pet-achievement-roadmap-list li + li {
+    margin-top: var(--spacing-40);
+  }
+
+  .chat-pet-achievements-experimental {
+    margin: var(--spacing-200) 0 0;
+    color: var(--vscode-descriptionForeground);
+    font-size: 12px;
+  }
+
+  .source-note {
+    margin-top: var(--spacing-200);
+    color: var(--vscode-descriptionForeground);
+    font-size: 12px;
+  }
+
+  @media (max-width: 560px) {
+    .chat-pet-achievements-content {
+      padding: var(--spacing-160) var(--spacing-120);
+    }
+
+    .chat-pet-achievements-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="chat-pet-achievements-content">
+    <div class="chat-pet-achievements-inner">
+      <h1>Achievements</h1>
+      <p class="chat-pet-achievements-intro">Unlock hats as you explore agent features, then choose what your pet wears by selecting an unlocked card.</p>
+
+      <section class="chat-pet-achievements-collection" aria-label="Achievement collection, 0 of 13 unlocked">
+        <div class="chat-pet-achievements-collection-header">
+          <h2>Collection</h2>
+          <span class="chat-pet-achievements-count">0 of 13 unlocked</span>
+        </div>
+        <ul class="chat-pet-achievements-list" id="achievementList"></ul>
+      </section>
+
+      <p class="chat-pet-achievements-experimental">The VS Code pet and achievements are experimental. Features and rewards may change.</p>
+      <p class="source-note">Hover or focus a locked achievement card to reveal the unlocked state. Hat previews are cropped from the 384 x 288 accessory atlases and composited over <code>buddy-idle-stable-96.png</code>.</p>
+    </div>
+  </main>
+
+<script>
+  const BODY_SRC = './assets/pets/buddy-idle-stable-96.png';
+  const ACCESSORY_BASE = './assets/accessories/';
+  const PREVIEW_SIZE = 96;
+  const SILHOUETTE_COLOR = '#cccccc';
+  const HEAD_ANCHOR = { x: 48, y: 40 };
+  const RIGHT_EYE_ANCHOR = { x: 56, y: 56 };
+  const ANTENNAE_OCCLUSION = { x: 16, y: -8, width: 64, height: 40 };
+  const WIDE_HEAD_PIVOT = { x: 48, y: 40 };
+
+  const achievements = [
+    { kind: 'none', title: 'No Hat', state: 'Select', selected: false },
+    {
+      title: 'Second Draft',
+      description: 'You edited and resent an earlier chat request.',
+      hint: 'An earlier request may deserve a second pass.',
+      reward: 'Grand Top Hat & Monocle',
+      atlas: 'grand-top-hat-monocle.png',
+      locked: true,
+      coversAntennae: true,
+      eyeAccessoryMirrorsWithFacing: false,
+    },
+    {
+      title: 'Welcome to the Wild West',
+      description: 'You sent your first chat message.',
+      hint: 'Every collection starts with a first conversation.',
+      reward: 'Cowboy Hat',
+      atlas: 'cowboy-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Shared Perspective',
+      description: 'You shared the integrated browser with the agent.',
+      hint: 'Let the agent see what you see in the integrated browser.',
+      reward: 'Baseball Cap',
+      atlas: 'baseball-cap.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Model Citizen',
+      description: 'You selected a different model from the model picker.',
+      hint: 'A different model can offer a different perspective.',
+      reward: 'Construction Hard Hat',
+      atlas: 'construction-hard-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Server Wrangler',
+      description: 'You configured an MCP server.',
+      hint: 'Connect Chat to a server beyond the editor.',
+      reward: 'Firefighter Helmet',
+      atlas: 'firefighter-helmet.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Skilled Builder',
+      description: 'You added a custom skill.',
+      hint: 'Teach Chat a skill of your own.',
+      reward: 'Crown',
+      atlas: 'crown.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Mission Control',
+      description: 'You opened the Agents window.',
+      hint: 'Some agent work belongs in its own window.',
+      reward: 'Propeller Hat',
+      atlas: 'propeller-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Ship it',
+      description: 'You used Create PR in the Agents window.',
+      hint: 'When the changes are ready, send them on their way.',
+      reward: 'Dark Sailor Hat',
+      atlas: 'dark-sailor-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Let it cook',
+      description: 'You kept a change prepared by Chat.',
+      hint: 'Give a good idea time to come together.',
+      reward: 'White Chef Hat',
+      atlas: 'white-chef-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Trust but Verify',
+      description: 'You opened agent changes for review.',
+      hint: 'Take a closer look before keeping the changes.',
+      reward: 'Bamboo Hat',
+      atlas: 'bamboo-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Follow the Trail',
+      description: 'You opened a file or code reference from Chat.',
+      hint: 'Useful answers often point somewhere worth exploring.',
+      reward: 'Straw Hat',
+      atlas: 'straw-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Copy That',
+      description: 'You copied useful output from Chat.',
+      hint: 'Keep something useful from a chat response.',
+      reward: 'Pink Party Hat',
+      atlas: 'pink-party-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+    {
+      title: 'Party Mode',
+      description: 'You switched an agent session from Interactive to Autopilot.',
+      hint: 'Some work is ready to carry on with less steering.',
+      reward: 'Wizard Hat',
+      atlas: 'wizard-hat.png',
+      locked: true,
+      coversAntennae: true,
+    },
+  ];
+
+  const images = new Map();
+
+  function loadImage(src) {
+    if (images.has(src)) {
+      return images.get(src);
+    }
+    const promise = new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+      image.src = src;
+    });
+    images.set(src, promise);
+    return promise;
+  }
+
+  function drawHeadLayer(context, accessoryImage, sourceRow) {
+    context.drawImage(
+      accessoryImage,
+      0,
+      sourceRow * PREVIEW_SIZE,
+      PREVIEW_SIZE,
+      PREVIEW_SIZE,
+      HEAD_ANCHOR.x - WIDE_HEAD_PIVOT.x,
+      HEAD_ANCHOR.y - WIDE_HEAD_PIVOT.y,
+      PREVIEW_SIZE,
+      PREVIEW_SIZE
+    );
+  }
+
+  function drawEyeLayer(context, accessoryImage) {
+    context.drawImage(
+      accessoryImage,
+      0,
+      2 * PREVIEW_SIZE,
+      PREVIEW_SIZE,
+      PREVIEW_SIZE,
+      RIGHT_EYE_ANCHOR.x,
+      RIGHT_EYE_ANCHOR.y,
+      PREVIEW_SIZE,
+      PREVIEW_SIZE
+    );
+  }
+
+  function drawAccessory(context, accessoryImage, achievement) {
+    drawHeadLayer(context, accessoryImage, 0);
+    drawHeadLayer(context, accessoryImage, 1);
+    if (achievement.eyeAccessoryMirrorsWithFacing !== false) {
+      drawEyeLayer(context, accessoryImage);
+    } else {
+      drawEyeLayer(context, accessoryImage);
+    }
+  }
+
+  function clearAntennae(context) {
+    context.clearRect(
+      ANTENNAE_OCCLUSION.x,
+      ANTENNAE_OCCLUSION.y,
+      ANTENNAE_OCCLUSION.width,
+      ANTENNAE_OCCLUSION.height
+    );
+  }
+
+  async function renderPreview(canvas, achievement, unlocked) {
+    const context = canvas.getContext('2d');
+    context.imageSmoothingEnabled = false;
+    context.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+
+    if (!achievement.atlas) {
+      const body = await loadImage(BODY_SRC);
+      context.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+      return;
+    }
+
+    const accessory = await loadImage(`${ACCESSORY_BASE}${achievement.atlas}`);
+    if (!unlocked) {
+      drawAccessory(context, accessory, achievement);
+      context.globalCompositeOperation = 'source-in';
+      context.fillStyle = SILHOUETTE_COLOR;
+      context.fillRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+      context.globalCompositeOperation = 'source-over';
+      return;
+    }
+
+    const body = await loadImage(BODY_SRC);
+    drawHeadLayer(context, accessory, 0);
+    context.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    if (achievement.coversAntennae) {
+      clearAntennae(context);
+      context.save();
+      context.globalCompositeOperation = 'destination-over';
+      drawHeadLayer(context, accessory, 0);
+      context.restore();
+    }
+    drawHeadLayer(context, accessory, 1);
+    drawEyeLayer(context, accessory);
+  }
+
+  function createPreview(achievement, unlocked) {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'chat-pet-achievement-preview';
+    canvas.width = PREVIEW_SIZE;
+    canvas.height = PREVIEW_SIZE;
+    canvas.setAttribute('aria-hidden', 'true');
+    renderPreview(canvas, achievement, unlocked).catch(error => {
+      console.error(error);
+    });
+    return canvas;
+  }
+
+  function createStateBlock({ heading, state, description, reward }) {
+    const block = document.createElement('div');
+    const title = document.createElement('h3');
+    const stateElement = document.createElement('span');
+    const descriptionElement = document.createElement('p');
+    const rewardElement = document.createElement('p');
+
+    title.textContent = heading;
+    stateElement.className = 'chat-pet-achievement-state';
+    stateElement.textContent = state;
+    descriptionElement.className = 'chat-pet-achievement-description';
+    descriptionElement.textContent = description;
+    rewardElement.className = 'chat-pet-achievement-reward';
+    rewardElement.textContent = reward ? `Rewards: ${reward}` : '';
+
+    block.append(title, stateElement, descriptionElement);
+    if (reward) {
+      block.append(rewardElement);
+    }
+    return block;
+  }
+
+  function createCard(achievement) {
+    const listItem = document.createElement('li');
+    listItem.className = 'chat-pet-achievements-list-item';
+
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'chat-pet-achievement-card';
+
+    if (achievement.kind === 'none') {
+      card.classList.add('no-hat');
+      card.setAttribute('aria-pressed', String(achievement.selected));
+      card.setAttribute('aria-label', 'No Hat');
+      const previews = document.createElement('div');
+      previews.className = 'chat-pet-achievement-previews';
+      previews.append(createPreview(achievement, true));
+      card.append(previews, createStateBlock({
+        heading: achievement.title,
+        state: achievement.state,
+        description: '',
+      }));
+      listItem.append(card);
+      return listItem;
+    }
+
+    const unlocked = !achievement.locked;
+    card.classList.toggle('locked', !unlocked);
+    card.classList.toggle('wearing', Boolean(achievement.wearing));
+    card.setAttribute('aria-pressed', String(Boolean(achievement.wearing)));
+    card.setAttribute('aria-label', unlocked
+      ? `${achievement.title}. Reward: ${achievement.reward}. ${achievement.wearing ? 'Wearing' : 'Unlocked'}`
+      : `Locked. Hint: ${achievement.hint} Rewards: ${achievement.reward}.`);
+
+    if (achievement.isNew && unlocked) {
+      const badge = document.createElement('span');
+      badge.className = 'chat-pet-achievement-new-badge';
+      badge.textContent = 'New';
+      badge.setAttribute('aria-hidden', 'true');
+      card.append(badge);
+    }
+
+    card.title = unlocked ? 'Hover to preview the locked state' : 'Hover to preview the unlocked state';
+
+    const defaultState = document.createElement('div');
+    defaultState.className = 'default-state';
+    const defaultPreviews = document.createElement('div');
+    defaultPreviews.className = 'chat-pet-achievement-previews';
+    defaultPreviews.append(createPreview(achievement, unlocked));
+    defaultState.append(defaultPreviews);
+    defaultState.append(unlocked
+      ? createStateBlock({
+        heading: achievement.title,
+        state: achievement.wearing ? 'Wearing' : 'Unlocked',
+        description: achievement.description,
+        reward: achievement.reward,
+      })
+      : createStateBlock({
+        heading: 'Locked',
+        state: 'Hint',
+        description: achievement.hint,
+        reward: achievement.reward,
+      }));
+
+    const hoverState = document.createElement('div');
+    hoverState.className = 'hover-state';
+    const hoverPreviews = document.createElement('div');
+    hoverPreviews.className = 'chat-pet-achievement-previews';
+    hoverPreviews.append(createPreview(achievement, !unlocked));
+    hoverState.append(hoverPreviews);
+    hoverState.append(unlocked
+      ? createStateBlock({
+        heading: 'Locked',
+        state: 'Hint',
+        description: achievement.hint,
+        reward: achievement.reward,
+      })
+      : createStateBlock({
+        heading: achievement.title,
+        state: 'Unlocked',
+        description: achievement.description,
+        reward: achievement.reward,
+      }));
+
+    card.append(defaultState, hoverState);
+    listItem.append(card);
+    return listItem;
+  }
+
+  function createRoadmapCard() {
+    const listItem = document.createElement('li');
+    const card = document.createElement('article');
+    card.className = 'chat-pet-achievement-card chat-pet-achievement-roadmap';
+
+    const preview = document.createElement('div');
+    preview.className = 'chat-pet-achievement-roadmap-preview';
+    preview.textContent = 'TBD';
+
+    const content = document.createElement('div');
+    const title = document.createElement('h3');
+    const state = document.createElement('span');
+    const description = document.createElement('p');
+    const list = document.createElement('ul');
+
+    title.textContent = 'TBD';
+    state.className = 'chat-pet-achievement-state';
+    state.textContent = 'Coming soon';
+    description.className = 'chat-pet-achievement-description';
+    description.textContent = 'Upcoming pet features:';
+    list.className = 'chat-pet-achievement-roadmap-list';
+
+    for (const text of [
+      'A naming competition',
+      'More achievements and built-in hats',
+      'Customizable hats that you can upload',
+    ]) {
+      const item = document.createElement('li');
+      item.textContent = text;
+      list.append(item);
+    }
+
+    content.append(title, state, description, list);
+    card.append(preview, content);
+    listItem.append(card);
+    return listItem;
+  }
+
+  const list = document.getElementById('achievementList');
+  for (const achievement of achievements) {
+    list.append(createCard(achievement));
+  }
+  list.append(createRoadmapCard());
+</script>
+</body>
+</html>
