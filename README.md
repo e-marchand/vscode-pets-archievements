@@ -6,6 +6,8 @@ View this reference online at [e-marchand.github.io/vscode-pets-archievements](h
 
 This list is based on the upstream `microsoft/vscode` `chatPetAchievements.ts` definitions and the matching accessory sprite sheets copied into [`assets/accessories`](./assets/accessories). Each accessory image is a 384 x 288 PNG atlas containing animation frames.
 
+In the [interactive collection](./achievements-table.html), click **True Name** to open Blobby's color selector. Choose one of VS Code's ten presets: Stable, Insiders, Exploration, Red, Yellow, Green, Purple, Pink, White, or Black. Presets immediately update every pet preview, including all achievement hover previews and **No Hat**, while preserving accessory colors and locked silhouettes. Custom colors can be drafted with the picker or a `#RGB` / `#RRGGBB` hex value, then committed with **Apply Color**. Body shading and contrasting eyes follow VS Code's color behavior. This previews customization only; it does not unlock achievements or change your VS Code pet. The selected color lasts until the page is reloaded.
+
 ## Enabled achievements
 
 | Achievement | Trigger / unlocked description | Hint shown while locked | Reward | Sprite sheet |

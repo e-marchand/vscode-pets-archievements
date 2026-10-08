@@ -275,6 +275,116 @@
     font-size: 12px;
   }
 
+  .chat-pet-color-dialog {
+    width: 760px;
+    max-width: calc(100% - 32px);
+    padding: var(--spacing-240);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editorWidget-background);
+    color: var(--vscode-foreground);
+    font: inherit;
+  }
+
+  .chat-pet-color-dialog::backdrop {
+    background: rgb(0 0 0 / 60%);
+  }
+
+  .chat-pet-color-dialog label {
+    display: block;
+    margin-bottom: var(--spacing-80);
+  }
+
+  .chat-pet-color-dialog input {
+    height: 40px;
+    min-width: 0;
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+    font: inherit;
+  }
+
+  .chat-pet-color-presets {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--spacing-120);
+    margin-bottom: var(--spacing-200);
+  }
+
+  .chat-pet-color-preset {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-40);
+  }
+
+  .chat-pet-color-preset canvas {
+    max-width: 100%;
+    height: auto;
+    border: 0;
+    background: transparent;
+  }
+
+  .chat-pet-color-preset[aria-pressed="true"] {
+    border-color: var(--vscode-focusBorder);
+    background: var(--vscode-list-hoverBackground);
+  }
+
+  .chat-pet-color-selection {
+    min-height: 1.4em;
+    color: var(--vscode-descriptionForeground);
+  }
+
+  .chat-pet-custom-color {
+    padding: var(--spacing-160);
+    margin-bottom: var(--spacing-160);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+  }
+
+  .chat-pet-custom-color-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-120);
+  }
+
+  #petColor {
+    width: 44px;
+    padding: var(--spacing-40);
+    cursor: pointer;
+  }
+
+  #petColorHex {
+    width: 130px;
+    padding: var(--spacing-80);
+  }
+
+  #petColorError {
+    margin: var(--spacing-80) 0 0;
+  }
+
+  .chat-pet-color-dialog button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .chat-pet-color-dialog button {
+    padding: var(--spacing-60) var(--spacing-120);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: var(--vscode-corner-radius);
+    background: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .chat-pet-color-dialog :focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+  }
+
   @media (max-width: 560px) {
     .chat-pet-achievements-content {
       padding: var(--spacing-160) var(--spacing-120);
@@ -282,6 +392,10 @@
 
     .chat-pet-achievements-list {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    .chat-pet-color-presets {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>
@@ -301,9 +415,29 @@
       </section>
 
       <p class="chat-pet-achievements-experimental">The VS Code pet and achievements are experimental. Features and rewards may change.</p>
-      <p class="source-note">Hover or focus a locked achievement card to reveal the unlocked state. Hat previews are cropped from the 384 x 288 accessory atlases and composited over <code>buddy-idle-stable-96.png</code>.</p>
+      <p class="source-note">Hover or focus a locked achievement card to reveal the unlocked state. Click True Name to choose a pet color for all previews. Hat previews are cropped from the 384 x 288 accessory atlases and composited over <code>buddy-idle-stable-96.png</code>.</p>
     </div>
   </main>
+
+  <dialog class="chat-pet-color-dialog" id="petColorDialog" aria-labelledby="petColorTitle">
+    <h2 id="petColorTitle">Blobby color</h2>
+    <p>Pick a classic look or give Blobby a color of its own.</p>
+    <div class="chat-pet-color-presets" id="petColorPresets" role="group" aria-label="Blobby color presets"></div>
+    <section class="chat-pet-custom-color" aria-labelledby="customColorTitle">
+      <h3 id="customColorTitle">Custom color</h3>
+      <p>Choose any color or enter a hex value. Apply it when it feels right.</p>
+      <form class="chat-pet-custom-color-row" id="petColorForm">
+        <canvas class="chat-pet-achievement-preview" id="customColorPreview" width="96" height="96" aria-hidden="true"></canvas>
+        <input type="color" id="petColor" value="#23a8f2" aria-label="Custom color">
+        <input type="text" id="petColorHex" value="#23a8f2" placeholder="#ff8800" aria-label="Custom hex color" aria-describedby="petColorError" spellcheck="false">
+        <button type="submit" id="applyPetColor" disabled>Apply Color</button>
+      </form>
+      <p id="petColorError" role="status"></p>
+    </section>
+    <form method="dialog">
+      <button type="submit">Done</button>
+    </form>
+  </dialog>
 
 <script>
   const BODY_SRC = './assets/pets/buddy-idle-stable-96.png';
@@ -436,6 +570,7 @@
       coversAntennae: true,
     },
     {
+      kind: 'color',
       title: 'True Name',
       description: 'Blob the Builder? Blobby McBlobface? Nope, my name is Blobby.',
       hint: 'This little blob has a name. Try calling it in Chat.',
@@ -445,6 +580,191 @@
   ];
 
   const images = new Map();
+  const petPreviews = new Map();
+  const colorDialog = document.getElementById('petColorDialog');
+  const colorInput = document.getElementById('petColor');
+  const hexInput = document.getElementById('petColorHex');
+  const applyColorButton = document.getElementById('applyPetColor');
+  const colorError = document.getElementById('petColorError');
+  const customColorPreview = document.getElementById('customColorPreview');
+  const colorPresets = [
+    { id: 'stable', label: 'Stable', hex: '#23a8f2' },
+    { id: 'insiders', label: 'Insiders', hex: '#24bfa5' },
+    { id: '#ff8c00', label: 'Exploration', hex: '#ff8c00' },
+    { id: '#e6536f', label: 'Red', hex: '#e6536f' },
+    { id: '#e6c94d', label: 'Yellow', hex: '#e6c94d' },
+    { id: '#55b85a', label: 'Green', hex: '#55b85a' },
+    { id: '#a277e6', label: 'Purple', hex: '#a277e6' },
+    { id: '#ed83b5', label: 'Pink', hex: '#ed83b5' },
+    { id: '#ffffff', label: 'White', hex: '#ffffff' },
+    { id: '#000000', label: 'Black', hex: '#000000' },
+  ];
+  const presetButtons = new Map();
+  let selectedColor = 'stable';
+  let tintedBody = null;
+  let tintedBodyColor = null;
+
+  function getBodyColor(color) {
+    return colorPresets.find(preset => preset.id === color)?.hex || color;
+  }
+
+  function parseHex(value) {
+    const hex = value.trim().toLowerCase();
+    if (!/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/.test(hex)) {
+      return null;
+    }
+    return hex.length === 4 ? '#' + [...hex.slice(1)].map(digit => digit + digit).join('') : hex;
+  }
+
+  function luminance(rgb) {
+    const linear = rgb.map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  }
+
+  function darkenBody(rgb, factor) {
+    const [r, g, b] = rgb.map(channel => channel / 255);
+    const high = Math.max(r, g, b);
+    const low = Math.min(r, g, b);
+    const lightness = (high + low) / 2;
+    const delta = high - low;
+    let hue = 0;
+    let saturation = 0;
+    if (delta) {
+      saturation = delta / (lightness <= 0.5 ? 2 * lightness : 2 - 2 * lightness);
+      hue = high === r ? (g - b) / delta + (g < b ? 6 : 0)
+        : high === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+    }
+    // Match VS Code's rounded HSL values before reducing lightness.
+    const h = Math.round(hue * 60) / 360;
+    const s = Math.round(saturation * 1000) / 1000;
+    const l = Math.round((Math.round(lightness * 1000) / 1000) * (1 - factor) * 1000) / 1000;
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    return [h + 1 / 3, h, h - 1 / 3].map(value => {
+      const t = (value + 1) % 1;
+      const channel = t < 1 / 6 ? p + (q - p) * 6 * t
+        : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p;
+      return Math.round(channel * 255);
+    });
+  }
+
+  function createColoredBody(body, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = PREVIEW_SIZE;
+    canvas.height = PREVIEW_SIZE;
+    const bodyContext = canvas.getContext('2d');
+    bodyContext.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    if (color === 'stable') {
+      return canvas;
+    }
+    const pixels = bodyContext.getImageData(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    const hex = getBodyColor(color);
+    const rgb = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16));
+    const bodyLuminance = luminance(rgb);
+    const eyeLuminance = luminance([33, 35, 36]);
+    const contrast = (Math.max(bodyLuminance, eyeLuminance) + 0.05) / (Math.min(bodyLuminance, eyeLuminance) + 0.05);
+    const palette = new Map([
+      [0x23a8f2, rgb],
+      [0x0077b8, color === 'insiders' ? [0, 154, 124] : darkenBody(rgb, 0.25)],
+      [0x004e7c, color === 'insiders' ? [0, 69, 56] : darkenBody(rgb, 0.5)],
+    ]);
+    if (color !== 'insiders' && contrast < 3) {
+      palette.set(0x191a1b, [245, 245, 245]);
+    }
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      const replacement = palette.get((pixels.data[i] << 16) | (pixels.data[i + 1] << 8) | pixels.data[i + 2]);
+      if (pixels.data[i + 3] && replacement) {
+        pixels.data[i] = replacement[0];
+        pixels.data[i + 1] = replacement[1];
+        pixels.data[i + 2] = replacement[2];
+      }
+    }
+    bodyContext.putImageData(pixels, 0, 0);
+    return canvas;
+  }
+
+  function drawBody(context, body) {
+    if (tintedBodyColor !== selectedColor) {
+      tintedBody = createColoredBody(body, selectedColor);
+      tintedBodyColor = selectedColor;
+    }
+    context.drawImage(tintedBody, 0, 0);
+  }
+
+  function selectPetColor(color) {
+    selectedColor = color;
+    for (const [id, button] of presetButtons) {
+      button.setAttribute('aria-pressed', String(id === color));
+      button.querySelector('.chat-pet-color-selection').textContent = id === color ? 'Selected' : '';
+    }
+    hexInput.value = getBodyColor(color);
+    updateColorDraft();
+    for (const [canvas, achievement] of petPreviews) {
+      renderPreview(canvas, achievement, true).catch(error => {
+        console.error(error);
+      });
+    }
+  }
+
+  async function renderColorPreview(canvas, color) {
+    const body = await loadImage(BODY_SRC);
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    context.drawImage(createColoredBody(body, color), 0, 0);
+  }
+
+  function updateColorDraft() {
+    const color = parseHex(hexInput.value);
+    hexInput.setAttribute('aria-invalid', String(!color));
+    colorError.textContent = color ? '' : 'Enter a hex color such as #ff8800 or #f80.';
+    applyColorButton.disabled = !color || color === selectedColor;
+    if (color) {
+      colorInput.value = color;
+      renderColorPreview(customColorPreview, color).catch(error => console.error(error));
+    }
+  }
+
+  colorInput.addEventListener('input', () => {
+    hexInput.value = colorInput.value;
+    updateColorDraft();
+  });
+  hexInput.addEventListener('input', updateColorDraft);
+  document.getElementById('petColorForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const color = parseHex(hexInput.value);
+    if (!color) {
+      updateColorDraft();
+      hexInput.focus();
+      return;
+    }
+    selectPetColor(color);
+  });
+
+  for (const preset of colorPresets) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chat-pet-color-preset';
+    const canvas = document.createElement('canvas');
+    canvas.className = 'chat-pet-achievement-preview';
+    canvas.width = PREVIEW_SIZE;
+    canvas.height = PREVIEW_SIZE;
+    canvas.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.textContent = preset.label;
+    const state = document.createElement('span');
+    state.className = 'chat-pet-color-selection';
+    state.textContent = preset.id === selectedColor ? 'Selected' : '';
+    button.setAttribute('aria-pressed', String(preset.id === selectedColor));
+    button.append(canvas, label, state);
+    button.addEventListener('click', () => selectPetColor(preset.id));
+    presetButtons.set(preset.id, button);
+    document.getElementById('petColorPresets').append(button);
+    renderColorPreview(canvas, preset.id).catch(error => console.error(error));
+  }
+  updateColorDraft();
 
   function loadImage(src) {
     if (images.has(src)) {
@@ -508,6 +828,10 @@
   }
 
   async function renderPreview(canvas, achievement, unlocked) {
+    const [body, accessory] = await Promise.all([
+      unlocked ? loadImage(BODY_SRC) : null,
+      achievement.atlas ? loadImage(`${ACCESSORY_BASE}${achievement.atlas}`) : null,
+    ]);
     const context = canvas.getContext('2d');
     context.imageSmoothingEnabled = false;
     context.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
@@ -516,12 +840,10 @@
       if (!unlocked) {
         return;
       }
-      const body = await loadImage(BODY_SRC);
-      context.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+      drawBody(context, body);
       return;
     }
 
-    const accessory = await loadImage(`${ACCESSORY_BASE}${achievement.atlas}`);
     if (!unlocked) {
       drawAccessory(context, accessory, achievement);
       context.globalCompositeOperation = 'source-in';
@@ -531,9 +853,8 @@
       return;
     }
 
-    const body = await loadImage(BODY_SRC);
     drawHeadLayer(context, accessory, 0);
-    context.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    drawBody(context, body);
     if (achievement.coversAntennae) {
       clearAntennae(context);
       context.save();
@@ -551,6 +872,9 @@
     canvas.width = PREVIEW_SIZE;
     canvas.height = PREVIEW_SIZE;
     canvas.setAttribute('aria-hidden', 'true');
+    if (unlocked) {
+      petPreviews.set(canvas, achievement);
+    }
     renderPreview(canvas, achievement, unlocked).catch(error => {
       console.error(error);
     });
@@ -662,6 +986,12 @@
       }));
 
     card.append(defaultState, hoverState);
+    if (achievement.kind === 'color') {
+      card.setAttribute('aria-haspopup', 'dialog');
+      card.setAttribute('aria-controls', 'petColorDialog');
+      card.title = 'Click to choose a color for all pet previews';
+      card.addEventListener('click', () => colorDialog.showModal());
+    }
     listItem.append(card);
     return listItem;
   }
