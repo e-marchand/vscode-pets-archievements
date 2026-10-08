@@ -1,6 +1,6 @@
 # VS Code Pets Achievements for Copilot Chat
 
-> A reference for the Copilot Chat pet achievements and hat accessories in VS Code.
+> A reference for Copilot Chat pet achievements and customization rewards in VS Code.
 
 View this reference online at [e-marchand.github.io/vscode-pets-archievements](https://e-marchand.github.io/vscode-pets-archievements/).
 
@@ -8,7 +8,7 @@ This list is based on the upstream `microsoft/vscode` `chatPetAchievements.ts` d
 
 ## Enabled achievements
 
-| Achievement | Trigger / unlocked description | Hint shown while locked | Reward accessory | Sprite sheet |
+| Achievement | Trigger / unlocked description | Hint shown while locked | Reward | Sprite sheet |
 | :-- | :-- | :-- | :-- | :-- |
 | Second Draft | You edited and resent an earlier chat request. | An earlier request may deserve a second pass. | Grand Top Hat & Monocle | <img src="./assets/accessories/grand-top-hat-monocle.png" alt="Grand Top Hat & Monocle sprite sheet" width="128"><br>`grand-top-hat-monocle.png` |
 | Welcome to the Wild West | You sent your first chat message. | Every collection starts with a first conversation. | Cowboy Hat | <img src="./assets/accessories/cowboy-hat.png" alt="Cowboy Hat sprite sheet" width="128"><br>`cowboy-hat.png` |
@@ -23,6 +23,7 @@ This list is based on the upstream `microsoft/vscode` `chatPetAchievements.ts` d
 | Follow the Trail | You opened a file or code reference from Chat. | Useful answers often point somewhere worth exploring. | Straw Hat | <img src="./assets/accessories/straw-hat.png" alt="Straw Hat sprite sheet" width="128"><br>`straw-hat.png` |
 | Copy That | You copied useful output from Chat. | Keep something useful from a chat response. | Pink Party Hat | <img src="./assets/accessories/pink-party-hat.png" alt="Pink Party Hat sprite sheet" width="128"><br>`pink-party-hat.png` |
 | Party Mode | You switched an agent session from Interactive to Autopilot. | Some work is ready to carry on with less steering. | Wizard Hat | <img src="./assets/accessories/wizard-hat.png" alt="Wizard Hat sprite sheet" width="128"><br>`wizard-hat.png` |
+| True Name | Use `/blobby` in Chat. “Blob the Builder? Blobby McBlobface? Nope, my name is Blobby.” | This little blob has a name. Try calling it in Chat. | Color Customization | No hat |
 
 ## Disabled definitions
 
@@ -40,6 +41,7 @@ These achievements and accessories exist in the upstream definitions, but are cu
 The achievement names, descriptions, hints, and pet accessory artwork shown here are derived from Visual Studio Code source files in [`microsoft/vscode`](https://github.com/microsoft/vscode), including:
 
 - `src/vs/workbench/contrib/chat/browser/chatPetAchievements.ts`
+- `src/vs/workbench/contrib/chat/browser/chatPetAchievements.contribution.ts`
 - `src/vs/workbench/contrib/chat/browser/widget/media/chatPet/accessories/*.png`
 - `src/vs/workbench/contrib/chat/browser/widget/media/chatPet/buddy-idle-stable-96.png`
 

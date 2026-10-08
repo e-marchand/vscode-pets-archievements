@@ -286,12 +286,12 @@
   <main class="chat-pet-achievements-content">
     <div class="chat-pet-achievements-inner">
       <h1>Achievements</h1>
-      <p class="chat-pet-achievements-intro">Unlock hats as you explore agent features, then choose what your pet wears by selecting an unlocked card.</p>
+      <p class="chat-pet-achievements-intro">Unlock rewards as you explore agent features, then choose what your pet wears or how it looks.</p>
 
-      <section class="chat-pet-achievements-collection" aria-label="Achievement collection, 0 of 13 unlocked">
+      <section class="chat-pet-achievements-collection" aria-label="Achievement collection, 0 of 14 unlocked">
         <div class="chat-pet-achievements-collection-header">
           <h2>Collection</h2>
-          <span class="chat-pet-achievements-count">0 of 13 unlocked</span>
+          <span class="chat-pet-achievements-count">0 of 14 unlocked</span>
         </div>
         <ul class="chat-pet-achievements-list" id="achievementList"></ul>
       </section>
@@ -431,6 +431,13 @@
       locked: true,
       coversAntennae: true,
     },
+    {
+      title: 'True Name',
+      description: 'Blob the Builder? Blobby McBlobface? Nope, my name is Blobby.',
+      hint: 'This little blob has a name. Try calling it in Chat.',
+      reward: 'Color Customization',
+      locked: true,
+    },
   ];
 
   const images = new Map();
@@ -502,6 +509,9 @@
     context.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
 
     if (!achievement.atlas) {
+      if (!unlocked) {
+        return;
+      }
       const body = await loadImage(BODY_SRC);
       context.drawImage(body, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
       return;
